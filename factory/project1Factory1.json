@@ -1,0 +1,9 @@
+{
+	"name": "project1Factory1",
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f75929b6-4c10-4d64-9de9-83c1b4f133a8",
+		"tenantId": "4130bd39-7c53-419c-b1e5-8758d6d63f21"
+	}
+}
