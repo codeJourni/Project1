@@ -1,0 +1,32 @@
+{
+	"name": "ProductsData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorageProducts",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "products.json",
+				"container": "product-data-container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"ProductID": {
+					"type": "integer"
+				},
+				"ProductName": {
+					"type": "string"
+				},
+				"Price": {
+					"type": "number"
+				}
+			}
+		}
+	}
+}
