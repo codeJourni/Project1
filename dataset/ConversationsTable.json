@@ -1,0 +1,29 @@
+{
+	"name": "ConversationsTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PostgreSQL_Cluster_Link",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "conversation_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "customer_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "conversations"
+		}
+	}
+}

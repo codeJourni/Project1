@@ -1,5 +1,5 @@
 {
-	"name": "ProductsData",
+	"name": "ProductsDataJSON",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorageProducts",
