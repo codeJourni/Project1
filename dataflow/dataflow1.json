@@ -1,0 +1,72 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "UpdatedCustomerTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustomerID as string,",
+				"          Name as string,",
+				"          Email as string,",
+				"          Phone as string,",
+				"          LastPurchaseDate as string,",
+				"          TotalSpent as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> CustomerData",
+				"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1]\r",
+				",",
+				"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
+				"          telephone = iif(\r",
+				"    regexMatch(replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''), '^[0-9]{10}$'),\r",
+				"    replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''),\r",
+				"    toString(null())\r",
+				")\r",
+				",",
+				"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          customer_id = CustomerID,",
+				"          first_name,",
+				"          last_name,",
+				"          email_address = Email,",
+				"          phone_number = telephone,",
+				"          last_purchase_date = LastPurchaseDate,",
+				"          total_spent = TotalSpent",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

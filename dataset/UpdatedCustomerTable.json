@@ -1,0 +1,16 @@
+{
+	"name": "UpdatedCustomerTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PostgreSQL_Cluster_Link",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "public",
+			"table": "customers"
+		}
+	}
+}
