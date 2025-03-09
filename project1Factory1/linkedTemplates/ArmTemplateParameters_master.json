@@ -14,6 +14,12 @@
 		"PostgreSQL_Cluster_Link_connectionString": {
 			"value": ""
 		},
+		"AzureBlobStorageProducts_connectionString": {
+			"value": ""
+		},
+		"AzureBlobStorageCustomers_connectionString": {
+			"value": ""
+		},
 		"containerUri": {
 			"value": ""
 		},
