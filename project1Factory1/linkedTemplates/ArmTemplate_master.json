@@ -11,21 +11,21 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		},
-		"realistic_customers1_connectionString": {
+		"AzureBlobStorageCustomers_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'realistic_customers1'"
-		},
-		"PostgreSQL_Cluster_Link_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'PostgreSQL_Cluster_Link'"
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageCustomers'"
 		},
 		"AzureBlobStorageProducts_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageProducts'"
 		},
-		"AzureBlobStorageCustomers_connectionString": {
+		"PostgreSQL_Cluster_Link_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageCustomers'"
+			"metadata": "Secure string for 'connectionString' of 'PostgreSQL_Cluster_Link'"
+		},
+		"realistic_customers1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'realistic_customers1'"
 		},
 		"containerUri": {
 			"type": "string",
@@ -57,17 +57,17 @@
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
-					"realistic_customers1_connectionString": {
-						"value": "[parameters('realistic_customers1_connectionString')]"
-					},
-					"PostgreSQL_Cluster_Link_connectionString": {
-						"value": "[parameters('PostgreSQL_Cluster_Link_connectionString')]"
+					"AzureBlobStorageCustomers_connectionString": {
+						"value": "[parameters('AzureBlobStorageCustomers_connectionString')]"
 					},
 					"AzureBlobStorageProducts_connectionString": {
 						"value": "[parameters('AzureBlobStorageProducts_connectionString')]"
 					},
-					"AzureBlobStorageCustomers_connectionString": {
-						"value": "[parameters('AzureBlobStorageCustomers_connectionString')]"
+					"PostgreSQL_Cluster_Link_connectionString": {
+						"value": "[parameters('PostgreSQL_Cluster_Link_connectionString')]"
+					},
+					"realistic_customers1_connectionString": {
+						"value": "[parameters('realistic_customers1_connectionString')]"
 					}
 				}
 			},

@@ -11,107 +11,27 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		},
-		"realistic_customers1_connectionString": {
+		"AzureBlobStorageCustomers_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'realistic_customers1'"
-		},
-		"PostgreSQL_Cluster_Link_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'PostgreSQL_Cluster_Link'"
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageCustomers'"
 		},
 		"AzureBlobStorageProducts_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageProducts'"
 		},
-		"AzureBlobStorageCustomers_connectionString": {
+		"PostgreSQL_Cluster_Link_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageCustomers'"
+			"metadata": "Secure string for 'connectionString' of 'PostgreSQL_Cluster_Link'"
+		},
+		"realistic_customers1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'realistic_customers1'"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/realistic_customers1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzurePostgreSql",
-				"version": "1.0",
-				"typeProperties": {
-					"connectionString": "[parameters('realistic_customers1_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "realistic-customers.csv",
-						"container": "customer-data-container"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "CustomerID",
-						"type": "String"
-					},
-					{
-						"name": "Name",
-						"type": "String"
-					},
-					{
-						"name": "Email",
-						"type": "String"
-					},
-					{
-						"name": "Phone",
-						"type": "String"
-					},
-					{
-						"name": "LastPurchaseDate",
-						"type": "String"
-					},
-					{
-						"name": "TotalSpent",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -159,99 +79,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/CustomerDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "DelimitedText1",
-								"type": "DatasetReference"
-							},
-							"name": "CustomerData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "UpdatedCustomerTable",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CustomerID as string,",
-						"          Name as string,",
-						"          Email as string,",
-						"          Phone as string,",
-						"          LastPurchaseDate as string,",
-						"          TotalSpent as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> CustomerData",
-						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1]\r",
-						",",
-						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
-						"          telephone = iif(\r",
-						"    regexMatch(replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''), '^[0-9]{10}$'),\r",
-						"    replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''),\r",
-						"    toString(null())\r",
-						")\r",
-						",",
-						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          customer_id = CustomerID,",
-						"          first_name,",
-						"          last_name,",
-						"          email_address = Email,",
-						"          phone_number = telephone,",
-						"          last_purchase_date = LastPurchaseDate,",
-						"          total_spent = TotalSpent",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
-				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/PostgreSQL_Cluster_Link')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzurePostgreSql",
-				"version": "1.0",
-				"typeProperties": {
-					"connectionString": "[parameters('PostgreSQL_Cluster_Link_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/UpdatedCustomerTable')]",
+			"name": "[concat(parameters('factoryName'), '/ConversationsTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -261,78 +89,28 @@
 				},
 				"annotations": [],
 				"type": "AzurePostgreSqlTable",
-				"schema": [],
+				"schema": [
+					{
+						"name": "conversation_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "customer_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
 				"typeProperties": {
 					"schema": "public",
-					"table": "customers"
+					"table": "conversations"
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageProducts')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorageProducts_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ProductsDataJSON')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorageProducts",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "products.json",
-						"container": "product-data-container"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"ProductID": {
-							"type": "integer"
-						},
-						"ProductName": {
-							"type": "string"
-						},
-						"Price": {
-							"type": "number"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageProducts')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageCustomers')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorageCustomers_connectionString')]"
-				}
-			},
-			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/CustomersDataJSON')]",
@@ -408,67 +186,222 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ProductsDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
+			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"type": "MappingDataFlow",
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
 				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ProductsDataJSON",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "realistic-customers.csv",
+						"container": "customer-data-container"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "String"
+					},
+					{
+						"name": "Name",
+						"type": "String"
+					},
+					{
+						"name": "Email",
+						"type": "String"
+					},
+					{
+						"name": "Phone",
+						"type": "String"
+					},
+					{
+						"name": "LastPurchaseDate",
+						"type": "String"
+					},
+					{
+						"name": "TotalSpent",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductsDataJSON')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageProducts",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "products.json",
+						"container": "product-data-container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"ProductID": {
+							"type": "integer"
+						},
+						"ProductName": {
+							"type": "string"
+						},
+						"Price": {
+							"type": "number"
 						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ProductsTable",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          ProductID as integer,",
-						"          ProductName as string,",
-						"          Price as double",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          product_id as integer,",
-						"          product_name as string,",
-						"          price as decimal(10,2)",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          product_id = ProductID,",
-						"          product_name = ProductName,",
-						"          price = Price",
-						"     )) ~> sink1"
-					]
+					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
-				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageProducts')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductsTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PostgreSQL_Cluster_Link",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "product_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "product_name",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "price",
+						"type": "numeric",
+						"precision": 10,
+						"scale": 2
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "products"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UpdatedCustomerTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PostgreSQL_Cluster_Link",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "public",
+					"table": "customers"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageCustomers')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorageCustomers_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageProducts')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorageProducts_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PostgreSQL_Cluster_Link')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"version": "1.0",
+				"typeProperties": {
+					"connectionString": "[parameters('PostgreSQL_Cluster_Link_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/realistic_customers1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"version": "1.0",
+				"typeProperties": {
+					"connectionString": "[parameters('realistic_customers1_connectionString')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ConversationsDataFlow')]",
@@ -548,7 +481,245 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ConversationsTable')]",
+			"name": "[concat(parameters('factoryName'), '/CustomerDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference"
+							},
+							"name": "CustomerData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "UpdatedCustomerTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as string,",
+						"          Name as string,",
+						"          Email as string,",
+						"          Phone as string,",
+						"          LastPurchaseDate as string,",
+						"          TotalSpent as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> CustomerData",
+						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
+						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
+						"          telephone = iif(\r",
+						"    regexMatch(replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''), '^[0-9]{10}$'),\r",
+						"    replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''),\r",
+						"    toString(null())\r",
+						"),",
+						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          customer_id = CustomerID,",
+						"          first_name,",
+						"          last_name,",
+						"          email_address = Email,",
+						"          phone_number = telephone,",
+						"          last_purchase_date = LastPurchaseDate,",
+						"          total_spent = TotalSpent",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
+				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductsDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ProductsDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ProductsTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ProductID as integer,",
+						"          ProductName as string,",
+						"          Price as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          product_id as integer,",
+						"          product_name as string,",
+						"          price as decimal(10,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          product_id = ProductID,",
+						"          product_name = ProductName,",
+						"          price = Price",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AlternateEmailFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "CustomersDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AlternateEmailTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "join1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as string,",
+						"          Name as string,",
+						"          Email as string,",
+						"          Phone as string,",
+						"          LastPurchaseDate as string,",
+						"          TotalSpent as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source(output(",
+						"          CustomerID as integer,",
+						"          Profile as (FirstName as string, LastName as string, Email as string),",
+						"          Conversations as (ConversationID as string, Messages as (DateTime as string, Sender as string, Message as string)[])[]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> source2",
+						"source1, source2 join(toInteger(source1@CustomerID) == source2@CustomerID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 select(mapColumn(",
+						"          CustomerID = source2@CustomerID,",
+						"          Email",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          alternate_email_id as integer,",
+						"          customer_id as integer,",
+						"          email_address as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          customer_id = CustomerID,",
+						"          email_address = Email",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
+				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/AlternateEmailTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AlternateEmailTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -560,7 +731,7 @@
 				"type": "AzurePostgreSqlTable",
 				"schema": [
 					{
-						"name": "conversation_id",
+						"name": "alternate_email_id",
 						"type": "integer",
 						"precision": 0,
 						"scale": 0
@@ -570,51 +741,17 @@
 						"type": "integer",
 						"precision": 0,
 						"scale": 0
-					}
-				],
-				"typeProperties": {
-					"schema": "public",
-					"table": "conversations"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ProductsTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "PostgreSQL_Cluster_Link",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzurePostgreSqlTable",
-				"schema": [
-					{
-						"name": "product_id",
-						"type": "integer",
-						"precision": 0,
-						"scale": 0
 					},
 					{
-						"name": "product_name",
+						"name": "email_address",
 						"type": "character varying",
 						"precision": 0,
 						"scale": 0
-					},
-					{
-						"name": "price",
-						"type": "numeric",
-						"precision": 10,
-						"scale": 2
 					}
 				],
 				"typeProperties": {
 					"schema": "public",
-					"table": "products"
+					"table": "alternateemails"
 				}
 			},
 			"dependsOn": [
