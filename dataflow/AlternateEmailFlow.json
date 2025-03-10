@@ -75,7 +75,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
 				"          customer_id = source2@CustomerID,",
-				"          email_address = Profile.Email",
+				"          email_address = Email",
 				"     )) ~> sink1"
 			]
 		}
