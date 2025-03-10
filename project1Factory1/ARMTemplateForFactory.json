@@ -39,7 +39,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "CustomerDataFlow",
+						"name": "ProductsDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -52,12 +52,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "CustomerDataFlow",
+								"referenceName": "ProductsDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"CustomerData": {},
-									"CustomersSink": {}
+									"source1": {},
+									"ProductsSink": {}
 								}
 							},
 							"staging": {},
@@ -75,7 +75,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/CustomerDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/ProductsDataFlow')]"
 			]
 		},
 		{
