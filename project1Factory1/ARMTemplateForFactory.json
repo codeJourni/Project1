@@ -39,7 +39,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "ProductsDataFlow",
+						"name": "ConversationsDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -52,12 +52,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "ProductsDataFlow",
+								"referenceName": "ConversationsDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
 									"source1": {},
-									"ProductsSink": {}
+									"ConversationsSink": {}
 								}
 							},
 							"staging": {},
@@ -75,7 +75,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/ProductsDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/ConversationsDataFlow')]"
 			]
 		},
 		{
