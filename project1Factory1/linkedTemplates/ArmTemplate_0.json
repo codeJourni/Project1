@@ -644,7 +644,11 @@
 								"referenceName": "UpdatedCustomerTable",
 								"type": "DatasetReference"
 							},
-							"name": "CustomersSink"
+							"name": "CustomersSink",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureBlobStorageCustomers",
+								"type": "LinkedServiceReference"
+							}
 						}
 					],
 					"transformations": [
@@ -666,7 +670,6 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     limit: 100,",
 						"     ignoreNoFilesFound: false) ~> CustomerData",
 						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
 						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
@@ -678,7 +681,7 @@
 						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
 						"derivedColumn1 alterRow(upsertIf(!isNull(CustomerID)),",
 						"     insertIf(isNull(CustomerID))) ~> AlterRow1",
-						"AlterRow1 sink(allowSchemaDrift: true,",
+						"AlterRow1 sink(allowSchemaDrift: false,",
 						"     validateSchema: true,",
 						"     input(",
 						"          customer_id as integer,",
@@ -711,7 +714,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
-				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]"
+				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageCustomers')]"
 			]
 		},
 		{
@@ -784,7 +788,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "ConversationsDataFlow",
+						"name": "CustomerDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -797,12 +801,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "ConversationsDataFlow",
+								"referenceName": "CustomerDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
-									"ConversationsSink": {}
+									"CustomerData": {},
+									"CustomersSink": {}
 								}
 							},
 							"staging": {},
@@ -820,7 +824,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/ConversationsDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/CustomerDataFlow')]"
 			]
 		}
 	]
