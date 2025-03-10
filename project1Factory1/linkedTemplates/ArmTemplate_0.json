@@ -513,8 +513,8 @@
 						"          LastPurchaseDate as string,",
 						"          TotalSpent as string",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: true,",
 						"     ignoreNoFilesFound: false) ~> CustomerData",
 						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
 						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
@@ -648,9 +648,6 @@
 					"transformations": [
 						{
 							"name": "join1"
-						},
-						{
-							"name": "select1"
 						}
 					],
 					"scriptLines": [
@@ -679,13 +676,7 @@
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> join1",
-						"join1 select(mapColumn(",
-						"          CustomerID = source2@CustomerID,",
-						"          Email",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
+						"join1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          alternate_email_id as integer,",
@@ -699,9 +690,8 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
 						"     mapColumn(",
-						"          customer_id = CustomerID,",
+						"          customer_id = source2@CustomerID,",
 						"          email_address = Email",
 						"     )) ~> sink1"
 					]
