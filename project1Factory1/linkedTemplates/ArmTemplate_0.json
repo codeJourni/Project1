@@ -347,7 +347,50 @@
 				},
 				"annotations": [],
 				"type": "AzurePostgreSqlTable",
-				"schema": [],
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_name",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_name",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "email_address",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "phone_number",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_purchase_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_spent",
+						"type": "numeric",
+						"precision": 10,
+						"scale": 2
+					}
+				],
 				"typeProperties": {
 					"schema": "public",
 					"table": "customers"
@@ -419,7 +462,7 @@
 								"referenceName": "ConversationsTable",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "ConversationsSink"
 						}
 					],
 					"transformations": [
@@ -465,7 +508,7 @@
 						"     mapColumn(",
 						"          conversation_id,",
 						"          customer_id",
-						"     )) ~> sink1"
+						"     )) ~> ConversationsSink"
 					]
 				}
 			},
@@ -496,7 +539,7 @@
 								"referenceName": "UpdatedCustomerTable",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "CustomersSink"
 						}
 					],
 					"transformations": [
@@ -509,15 +552,16 @@
 					],
 					"scriptLines": [
 						"source(output(",
-						"          CustomerID as string,",
+						"          CustomerID as short,",
 						"          Name as string,",
 						"          Email as string,",
 						"          Phone as string,",
 						"          LastPurchaseDate as string,",
-						"          TotalSpent as string",
+						"          TotalSpent as double",
 						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: true,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     limit: 100,",
 						"     ignoreNoFilesFound: false) ~> CustomerData",
 						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
 						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
@@ -530,7 +574,16 @@
 						"derivedColumn1 alterRow(insertIf(isNull(toInteger(CustomerID))),",
 						"     updateIf(!isNull(toInteger(CustomerID)))) ~> AlterRow1",
 						"AlterRow1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
+						"     validateSchema: true,",
+						"     input(",
+						"          customer_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email_address as string,",
+						"          phone_number as string,",
+						"          last_purchase_date as date,",
+						"          total_spent as decimal(10,2)",
+						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
 						"     updateable:true,",
@@ -539,6 +592,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
 						"     mapColumn(",
 						"          customer_id = CustomerID,",
 						"          first_name,",
@@ -547,7 +601,7 @@
 						"          phone_number = telephone,",
 						"          last_purchase_date = LastPurchaseDate,",
 						"          total_spent = TotalSpent",
-						"     )) ~> sink1"
+						"     )) ~> CustomersSink"
 					]
 				}
 			},
@@ -578,7 +632,7 @@
 								"referenceName": "ProductsTable",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "ProductsSink"
 						}
 					],
 					"transformations": [],
@@ -610,7 +664,7 @@
 						"          product_id = ProductID,",
 						"          product_name = ProductName,",
 						"          price = Price",
-						"     )) ~> sink1"
+						"     )) ~> ProductsSink"
 					]
 				}
 			},
@@ -648,7 +702,7 @@
 								"referenceName": "AlternateEmailTable",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "AlternateEmailSink"
 						}
 					],
 					"transformations": [
@@ -708,7 +762,7 @@
 						"     mapColumn(",
 						"          customer_id,",
 						"          email_address",
-						"     )) ~> sink1"
+						"     )) ~> AlternateEmailSink"
 					]
 				}
 			},
@@ -738,12 +792,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "CustomerDataFlow",
+								"referenceName": "ProductsDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"CustomerData": {},
-									"sink1": {}
+									"source1": {},
+									"ProductsSink": {}
 								}
 							},
 							"staging": {},
@@ -761,7 +815,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/CustomerDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/ProductsDataFlow')]"
 			]
 		}
 	]
