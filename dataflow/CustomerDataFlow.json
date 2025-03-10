@@ -24,6 +24,9 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "AlterRow1"
 				}
 			],
 			"scriptLines": [
@@ -47,7 +50,8 @@
 				"    toString(null())\r",
 				"),",
 				"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"derivedColumn1 alterRow(upsertIf(true())) ~> AlterRow1",
+				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: true,",
 				"     input(",
 				"          customer_id as integer,",
@@ -59,9 +63,10 @@
 				"          total_spent as decimal(10,2)",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:true,",
+				"     insertable:false,",
 				"     updateable:false,",
-				"     upsertable:false,",
+				"     upsertable:true,",
+				"     keys:['customer_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
