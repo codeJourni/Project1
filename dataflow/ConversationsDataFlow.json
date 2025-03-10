@@ -27,6 +27,9 @@
 				},
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "AlterRow1"
 				}
 			],
 			"scriptLines": [
@@ -48,7 +51,10 @@
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
 				"flatten1 derive(conversation_id = conversation_id.ConversationID,",
 				"          customer_id = toInteger(customer_id)) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"derivedColumn1 alterRow(upsertIf(!isNull(customer_id)\r",
+				"),",
+				"     insertIf(isNull(customer_id))) ~> AlterRow1",
+				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          conversation_id as integer,",
@@ -57,7 +63,8 @@
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
-				"     upsertable:false,",
+				"     upsertable:true,",
+				"     keys:['customer_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
