@@ -63,7 +63,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"join1 select(mapColumn(",
-				"          customer_id = source2@CustomerID,",
+				"          customer_id = source1@CustomerID,",
 				"          email_address = Email",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
