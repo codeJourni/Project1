@@ -19,15 +19,7 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [
-				{
-					"dataset": {
-						"referenceName": "AlternateEmailTable",
-						"type": "DatasetReference"
-					},
-					"name": "sink1"
-				}
-			],
+			"sinks": [],
 			"transformations": [
 				{
 					"name": "join1"
@@ -67,25 +59,7 @@
 				"          Email",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          alternate_email_id as integer,",
-				"          customer_id as integer,",
-				"          email_address as string",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     mapColumn(",
-				"          customer_id = CustomerID,",
-				"          email_address = Email",
-				"     )) ~> sink1"
+				"     skipDuplicateMapOutputs: true) ~> select1"
 			]
 		}
 	}
