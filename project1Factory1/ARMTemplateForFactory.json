@@ -39,7 +39,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flow1",
+						"name": "CustomerDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -52,13 +52,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "AlternateEmailFlow",
+								"referenceName": "CustomerDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
-									"source2": {},
-									"AlternateEmailSink": {}
+									"CustomerData": {},
+									"CustomersSink": {}
 								}
 							},
 							"staging": {},
@@ -76,7 +75,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/AlternateEmailFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/CustomerDataFlow')]"
 			]
 		},
 		{
@@ -593,8 +592,8 @@
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
-						"     updateable:true,",
-						"     upsertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
 						"     keys:['customer_id'],",
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
