@@ -545,9 +545,6 @@
 					"transformations": [
 						{
 							"name": "derivedColumn1"
-						},
-						{
-							"name": "AlterRow1"
 						}
 					],
 					"scriptLines": [
@@ -571,9 +568,7 @@
 						"    toString(null())\r",
 						"),",
 						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
-						"derivedColumn1 alterRow(insertIf(isNull(toInteger(CustomerID))),",
-						"     updateIf(!isNull(toInteger(CustomerID)))) ~> AlterRow1",
-						"AlterRow1 sink(allowSchemaDrift: true,",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: true,",
 						"     input(",
 						"          customer_id as integer,",
