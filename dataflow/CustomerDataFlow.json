@@ -18,7 +18,7 @@
 						"referenceName": "UpdatedCustomerTable",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "CustomersSink"
 				}
 			],
 			"transformations": [
@@ -80,7 +80,7 @@
 				"          phone_number = telephone,",
 				"          last_purchase_date = LastPurchaseDate,",
 				"          total_spent = TotalSpent",
-				"     )) ~> sink1"
+				"     )) ~> CustomersSink"
 			]
 		}
 	}

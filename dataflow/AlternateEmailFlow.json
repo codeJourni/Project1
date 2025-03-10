@@ -25,7 +25,7 @@
 						"referenceName": "AlternateEmailTable",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "AlternateEmailSink"
 				}
 			],
 			"transformations": [
@@ -85,7 +85,7 @@
 				"     mapColumn(",
 				"          customer_id,",
 				"          email_address",
-				"     )) ~> sink1"
+				"     )) ~> AlternateEmailSink"
 			]
 		}
 	}

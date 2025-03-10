@@ -18,7 +18,7 @@
 						"referenceName": "ConversationsTable",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "ConversationsSink"
 				}
 			],
 			"transformations": [
@@ -64,7 +64,7 @@
 				"     mapColumn(",
 				"          conversation_id,",
 				"          customer_id",
-				"     )) ~> sink1"
+				"     )) ~> ConversationsSink"
 			]
 		}
 	}
