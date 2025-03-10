@@ -792,12 +792,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "ProductsDataFlow",
+								"referenceName": "AlternateEmailFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
 									"source1": {},
-									"ProductsSink": {}
+									"source2": {},
+									"AlternateEmailSink": {}
 								}
 							},
 							"staging": {},
@@ -815,7 +816,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/ProductsDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/AlternateEmailFlow')]"
 			]
 		}
 	]
