@@ -100,6 +100,46 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AlternateEmailTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PostgreSQL_Cluster_Link",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "alternate_email_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "customer_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "email_address",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "alternateemails"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ConversationsTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -401,272 +441,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AlternateEmailTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "PostgreSQL_Cluster_Link",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzurePostgreSqlTable",
-				"schema": [
-					{
-						"name": "alternate_email_id",
-						"type": "integer",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "customer_id",
-						"type": "integer",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "email_address",
-						"type": "character varying",
-						"precision": 0,
-						"scale": 0
-					}
-				],
-				"typeProperties": {
-					"schema": "public",
-					"table": "alternateemails"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ConversationsDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "CustomersDataJSON",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ConversationsTable",
-								"type": "DatasetReference"
-							},
-							"name": "ConversationsSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "flatten1"
-						},
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Conversations as (ConversationID as string, Messages as (DateTime as timestamp, Message as string, Sender as string, SupportAgent as string)[])[],",
-						"          CustomerID as short,",
-						"          Profile as (Email as string, FirstName as string, LastName as string)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 foldDown(unroll(Conversations),",
-						"     mapColumn(",
-						"          customer_id = CustomerID,",
-						"          conversation_id = Conversations",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flatten1",
-						"flatten1 derive(conversation_id = conversation_id.ConversationID,",
-						"          customer_id = toInteger(customer_id)) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          conversation_id as integer,",
-						"          customer_id as integer",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          conversation_id,",
-						"          customer_id",
-						"     )) ~> ConversationsSink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
-				"[concat(variables('factoryId'), '/datasets/ConversationsTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/CustomerDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "DelimitedText1",
-								"type": "DatasetReference"
-							},
-							"name": "CustomerData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "UpdatedCustomerTable",
-								"type": "DatasetReference"
-							},
-							"name": "CustomersSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CustomerID as short,",
-						"          Name as string,",
-						"          Email as string,",
-						"          Phone as string,",
-						"          LastPurchaseDate as string,",
-						"          TotalSpent as double",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     limit: 100,",
-						"     ignoreNoFilesFound: false) ~> CustomerData",
-						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
-						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
-						"          telephone = iif(\r",
-						"    regexMatch(replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''), '^[0-9]{10}$'),\r",
-						"    replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''),\r",
-						"    toString(null())\r",
-						"),",
-						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: true,",
-						"     input(",
-						"          customer_id as integer,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          email_address as string,",
-						"          phone_number as string,",
-						"          last_purchase_date as date,",
-						"          total_spent as decimal(10,2)",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          customer_id = CustomerID,",
-						"          first_name,",
-						"          last_name,",
-						"          email_address = Email,",
-						"          phone_number = telephone,",
-						"          last_purchase_date = LastPurchaseDate,",
-						"          total_spent = TotalSpent",
-						"     )) ~> CustomersSink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
-				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ProductsDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ProductsDataJSON",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ProductsTable",
-								"type": "DatasetReference"
-							},
-							"name": "ProductsSink"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          ProductID as integer,",
-						"          ProductName as string,",
-						"          Price as double",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          product_id as integer,",
-						"          product_name as string,",
-						"          price as decimal(10,2)",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          product_id = ProductID,",
-						"          product_name = ProductName,",
-						"          price = Price",
-						"     )) ~> ProductsSink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
-				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AlternateEmailFlow')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -766,13 +540,251 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ConversationsDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CustomersDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ConversationsTable",
+								"type": "DatasetReference"
+							},
+							"name": "ConversationsSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flatten1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Conversations as (ConversationID as string, Messages as (DateTime as timestamp, Message as string, Sender as string, SupportAgent as string)[])[],",
+						"          CustomerID as short,",
+						"          Profile as (Email as string, FirstName as string, LastName as string)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> source1",
+						"source1 foldDown(unroll(Conversations),",
+						"     mapColumn(",
+						"          customer_id = CustomerID,",
+						"          conversation_id = Conversations",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"flatten1 derive(conversation_id = conversation_id.ConversationID,",
+						"          customer_id = toInteger(customer_id)) ~> derivedColumn1",
+						"derivedColumn1 alterRow(upsertIf(!isNull(customer_id)),",
+						"     insertIf(isNull(customer_id))) ~> AlterRow1",
+						"AlterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          conversation_id as integer,",
+						"          customer_id as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          conversation_id,",
+						"          customer_id",
+						"     )) ~> ConversationsSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/ConversationsTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CustomerDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference"
+							},
+							"name": "CustomerData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "UpdatedCustomerTable",
+								"type": "DatasetReference"
+							},
+							"name": "CustomersSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as short,",
+						"          Name as string,",
+						"          Email as string,",
+						"          Phone as string,",
+						"          LastPurchaseDate as string,",
+						"          TotalSpent as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     limit: 100,",
+						"     ignoreNoFilesFound: false) ~> CustomerData",
+						"CustomerData derive(first_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[1],",
+						"          last_name = split(replace(replace(replace(replace(replace(replace(replace(replace(replace(Name, 'Dr. ', ''), 'Mr. ', ''), 'Ms. ', ''), 'Mrs. ', ''), ' MD', ''), ' DDS', ''), ' PhD', ''), ' DVM', ''), ' Jr.', ''), ' ')[2],",
+						"          telephone = iif(\r",
+						"    regexMatch(replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''), '^[0-9]{10}$'),\r",
+						"    replace(replace(replace(replace(Phone, '-', ''), '(', ''), ')', ''), ' ', ''),\r",
+						"    toString(null())\r",
+						"),",
+						"          LastPurchaseDate = toTimestamp(LastPurchaseDate, 'M/d/yyyy')) ~> derivedColumn1",
+						"derivedColumn1 alterRow(upsertIf(!isNull(CustomerID)),",
+						"     insertIf(isNull(CustomerID))) ~> AlterRow1",
+						"AlterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     input(",
+						"          customer_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email_address as string,",
+						"          phone_number as string,",
+						"          last_purchase_date as date,",
+						"          total_spent as decimal(10,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          customer_id = CustomerID,",
+						"          first_name,",
+						"          last_name,",
+						"          email_address = Email,",
+						"          phone_number = telephone,",
+						"          last_purchase_date = LastPurchaseDate,",
+						"          total_spent = TotalSpent",
+						"     )) ~> CustomersSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
+				"[concat(variables('factoryId'), '/datasets/UpdatedCustomerTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductsDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ProductsDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ProductsTable",
+								"type": "DatasetReference"
+							},
+							"name": "ProductsSink"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ProductID as integer,",
+						"          ProductName as string,",
+						"          Price as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          product_id as integer,",
+						"          product_name as string,",
+						"          price as decimal(10,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          product_id = ProductID,",
+						"          product_name = ProductName,",
+						"          price = Price",
+						"     )) ~> ProductsSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "CustomerDataFlow",
+						"name": "ConversationsDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -785,12 +797,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "CustomerDataFlow",
+								"referenceName": "ConversationsDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"CustomerData": {},
-									"CustomersSink": {}
+									"source1": {},
+									"ConversationsSink": {}
 								}
 							},
 							"staging": {},
@@ -808,7 +820,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/CustomerDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/ConversationsDataFlow')]"
 			]
 		}
 	]
