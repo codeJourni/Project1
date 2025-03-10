@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "ProductsDataFlow",
+						"referenceName": "ConversationsDataFlow",
 						"type": "DataFlowReference"
 					},
 					"compute": {
