@@ -72,7 +72,12 @@
 				"     upsertable:false,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          alternate_email_id = Email,",
+				"          customer_id = source1@CustomerID,",
+				"          email_address = Profile.Email",
+				"     )) ~> sink1"
 			]
 		}
 	}
