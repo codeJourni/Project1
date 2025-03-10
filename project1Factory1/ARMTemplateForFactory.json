@@ -705,6 +705,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
 						"     mapColumn(",
 						"          customer_id = CustomerID,",
 						"          email_address = Email",
