@@ -63,8 +63,8 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"join1 select(mapColumn(",
-				"          CustomerID = source2@CustomerID,",
-				"          Email",
+				"          customer_id = source2@CustomerID,",
+				"          email_address = Email",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -83,8 +83,8 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          customer_id = CustomerID,",
-				"          email_address = Email",
+				"          customer_id,",
+				"          email_address",
 				"     )) ~> sink1"
 			]
 		}
