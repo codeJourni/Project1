@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "CustomerDataFlow",
+				"name": "ProductsDataFlow",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "CustomerDataFlow",
+						"referenceName": "ProductsDataFlow",
 						"type": "DataFlowReference"
 					},
 					"compute": {
