@@ -789,7 +789,11 @@
 							"name": "ProductsSink"
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "AlterRow1"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
 						"          ProductID as integer,",
@@ -800,7 +804,9 @@
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
 						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
+						"source1 alterRow(upsertIf(!isNull(ProductID)),",
+						"     insertIf(isNull(ProductID))) ~> AlterRow1",
+						"AlterRow1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          product_id as integer,",
@@ -810,7 +816,8 @@
 						"     deletable:false,",
 						"     insertable:true,",
 						"     updateable:false,",
-						"     upsertable:false,",
+						"     upsertable:true,",
+						"     keys:['product_id'],",
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
