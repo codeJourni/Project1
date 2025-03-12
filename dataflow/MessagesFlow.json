@@ -23,7 +23,13 @@
 			],
 			"transformations": [
 				{
-					"name": "MessagesSelect"
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "FlattenConversations"
+				},
+				{
+					"name": "FlattenMessages"
 				}
 			],
 			"scriptLines": [
@@ -36,16 +42,23 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
-				"MessagesSource select(mapColumn(",
-				"          ConversationID = Conversations[1].ConversationID,",
-				"          SupportAgent = Conversations[1].Messages[1].SupportAgent,",
-				"          Sender = Conversations[1].Messages[1].Sender,",
-				"          Message = Conversations[1].Messages[1].Message,",
-				"          DateTime = Conversations[1].Messages[1].DateTime",
+				"FlattenMessages derive(SupportAgent = iif(Sender == 'SupportAgent', SupportAgent, toString(null()))) ~> derivedColumn1",
+				"MessagesSource foldDown(unroll(Conversations),",
+				"     mapColumn(",
+				"          ConversationID = Conversations.ConversationID",
 				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> MessagesSelect",
-				"MessagesSelect sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> FlattenConversations",
+				"MessagesSource foldDown(unroll(Conversations.Messages),",
+				"     mapColumn(",
+				"          SupportAgent = Conversations.Messages.SupportAgent,",
+				"          Sender = Conversations.Messages.Sender,",
+				"          Message = Conversations.Messages.Message,",
+				"          DateTime = Conversations.Messages.DateTime",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> FlattenMessages",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          conversation_id as string,",
@@ -62,11 +75,11 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          conversation_id = ConversationID,",
-				"          support_agent = SupportAgent,",
-				"          message_sender = Sender,",
-				"          message = Message,",
-				"          timestamp = DateTime",
+				"          conversation_id = {Conversations[1].ConversationID},",
+				"          support_agent = {Conversations[1].Messages[1].SupportAgent},",
+				"          message_sender = {Conversations[1].Messages[1].Sender},",
+				"          message = {Conversations[1].Messages[1].Message},",
+				"          timestamp = {Conversations[1].Messages[1].DateTime}",
 				"     )) ~> MessagesSink"
 			]
 		}
