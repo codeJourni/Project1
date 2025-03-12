@@ -938,7 +938,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "MessagesFlow",
+						"name": "AlternateEmailFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -951,12 +951,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "MessagesFlow",
+								"referenceName": "AlternateEmailFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"MessagesSource": {},
-									"sink1": {}
+									"source1": {},
+									"source2": {},
+									"AlternateEmailSink": {}
 								}
 							},
 							"staging": {},
@@ -974,7 +975,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/MessagesFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/AlternateEmailFlow')]"
 			]
 		}
 	]
