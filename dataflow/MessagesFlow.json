@@ -23,10 +23,10 @@
 			],
 			"transformations": [
 				{
-					"name": "MessageSelect"
+					"name": "AlterRow1"
 				},
 				{
-					"name": "AlterRow1"
+					"name": "flatten1"
 				}
 			],
 			"scriptLines": [
@@ -39,16 +39,18 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
-				"MessagesSource select(mapColumn(",
-				"          ConversationID = Conversations[1].ConversationID,",
+				"flatten1 alterRow() ~> AlterRow1",
+				"MessagesSource foldDown(unroll(Conversations),",
+				"     mapColumn(",
+				"          ConversationID = {Conversations[1].ConversationID},",
 				"          CustomerID,",
-				"          Sender = Conversations[1].Messages[1].Sender,",
-				"          Message = Conversations[1].Messages[1].Message,",
-				"          DateTime = Conversations[1].Messages[1].DateTime",
+				"          Sender = {Conversations[1].Messages[1].Sender},",
+				"          SupportAgent = {Conversations[1].Messages[1].Sender},",
+				"          Message = {Conversations[1].Messages[1].Message},",
+				"          DateTime = {Conversations[1].Messages[1].DateTime}",
 				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> MessageSelect",
-				"MessageSelect alterRow() ~> AlterRow1",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
 				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
