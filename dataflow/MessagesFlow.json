@@ -12,7 +12,15 @@
 					"name": "MessagesSource"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "MessagesTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "flatten1"
@@ -51,7 +59,26 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten2",
-				"flatten2 derive(SupportAgent = iif(Sender == 'SupportAgent', SupportAgent, \"No Agent\")) ~> derivedColumn1"
+				"flatten2 derive(SupportAgent = iif(Sender == 'SupportAgent', SupportAgent, \"No Agent\")) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          conversation_id as string,",
+				"          support_agent as integer,",
+				"          message_sender as string,",
+				"          message as string,",
+				"          timestamp as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          support_agent = SupportAgent",
+				"     )) ~> sink1"
 			]
 		}
 	}
