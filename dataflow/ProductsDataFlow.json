@@ -9,7 +9,7 @@
 						"referenceName": "ProductsDataJSON",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "ProductsSource"
 				}
 			],
 			"sinks": [
@@ -35,8 +35,8 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'arrayOfDocuments') ~> source1",
-				"source1 alterRow(upsertIf(!isNull(ProductID)),",
+				"     documentForm: 'arrayOfDocuments') ~> ProductsSource",
+				"ProductsSource alterRow(upsertIf(!isNull(ProductID)),",
 				"     insertIf(isNull(ProductID))) ~> AlterRow1",
 				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",

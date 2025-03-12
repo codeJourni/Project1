@@ -9,11 +9,23 @@
 						"referenceName": "CustomersDataJSON",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "MessagesSource"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "MessagesTable",
+						"type": "DatasetReference"
+					},
+					"name": "MessagesSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "MessagesSelect"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          CustomerID as integer,",
@@ -23,7 +35,39 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine') ~> source1"
+				"     documentForm: 'documentPerLine') ~> MessagesSource",
+				"MessagesSource select(mapColumn(",
+				"          ConversationID = Conversations[1].ConversationID,",
+				"          SupportAgent = Conversations[1].Messages[1].SupportAgent,",
+				"          Sender = Conversations[1].Messages[1].Sender,",
+				"          Message = Conversations[1].Messages[1].Message,",
+				"          DateTime = Conversations[1].Messages[1].DateTime",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> MessagesSelect",
+				"MessagesSelect sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          conversation_id as string,",
+				"          support_agent as integer,",
+				"          message_sender as string,",
+				"          message as string,",
+				"          timestamp as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          conversation_id = ConversationID,",
+				"          support_agent = SupportAgent,",
+				"          message_sender = Sender,",
+				"          message = Message,",
+				"          timestamp = DateTime",
+				"     )) ~> MessagesSink"
 			]
 		}
 	}
