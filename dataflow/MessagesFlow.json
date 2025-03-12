@@ -23,13 +23,10 @@
 			],
 			"transformations": [
 				{
-					"name": "flatten1"
+					"name": "flattenConversations"
 				},
 				{
-					"name": "flatten2"
-				},
-				{
-					"name": "derivedColumn1"
+					"name": "flattenMessages"
 				}
 			],
 			"scriptLines": [
@@ -44,23 +41,22 @@
 				"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
 				"MessagesSource foldDown(unroll(Conversations),",
 				"     mapColumn(",
-				"          ConversationID = Conversations.ConversationID,",
+				"          CustomerID,",
 				"          Messages = Conversations.Messages",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 foldDown(unroll(Messages),",
+				"     skipDuplicateMapOutputs: false) ~> flattenConversations",
+				"flattenConversations foldDown(unroll(Messages),",
 				"     mapColumn(",
-				"          ConversationID,",
+				"          CustomerID,",
 				"          SupportAgent = Messages.SupportAgent,",
 				"          Sender = Messages.Sender,",
 				"          Message = Messages.Message,",
 				"          DateTime = Messages.DateTime",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten2",
-				"flatten2 derive(SupportAgent = iif(Sender == 'SupportAgent', SupportAgent, \"No Agent\")) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapOutputs: false) ~> flattenMessages",
+				"flattenMessages sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          conversation_id as string,",
@@ -77,7 +73,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          support_agent = SupportAgent",
+				"          message = Message",
 				"     )) ~> sink1"
 			]
 		}
