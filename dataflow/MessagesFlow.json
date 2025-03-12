@@ -24,9 +24,6 @@
 			"transformations": [
 				{
 					"name": "AlterRow1"
-				},
-				{
-					"name": "flatten1"
 				}
 			],
 			"scriptLines": [
@@ -39,18 +36,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'documentPerLine') ~> source1",
-				"flatten1 alterRow() ~> AlterRow1",
-				"source1 foldDown(unroll(Conversations),",
-				"     mapColumn(",
-				"          ConversationID = {Conversations[1].ConversationID},",
-				"          CustomerID,",
-				"          Sender = {Conversations[1].Messages[1].Sender},",
-				"          SupportAgent = {Conversations[1].Messages[1].SupportAgent},",
-				"          Message = {Conversations[1].Messages[1].Message},",
-				"          DateTime = {Conversations[1].Messages[1].DateTime}",
-				"     ),",
-				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"source1 alterRow() ~> AlterRow1",
 				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
