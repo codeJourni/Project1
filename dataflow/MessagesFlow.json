@@ -13,7 +13,11 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "MessageSelect"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          CustomerID as integer,",
@@ -23,7 +27,16 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine') ~> MessagesSource"
+				"     documentForm: 'documentPerLine') ~> MessagesSource",
+				"MessagesSource select(mapColumn(",
+				"          ConversationID = Conversations[1].ConversationID,",
+				"          CustomerID,",
+				"          Sender = Conversations[1].Messages[1].Sender,",
+				"          Message = Conversations[1].Messages[1].Message,",
+				"          DateTime = Conversations[1].Messages[1].DateTime",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> MessageSelect"
 			]
 		}
 	}
