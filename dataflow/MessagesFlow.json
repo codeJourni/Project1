@@ -45,7 +45,7 @@
 				"          ConversationID = {Conversations[1].ConversationID},",
 				"          CustomerID,",
 				"          Sender = {Conversations[1].Messages[1].Sender},",
-				"          SupportAgent = {Conversations[1].Messages[1].Sender},",
+				"          SupportAgent = {Conversations[1].Messages[1].SupportAgent},",
 				"          Message = {Conversations[1].Messages[1].Message},",
 				"          DateTime = {Conversations[1].Messages[1].DateTime}",
 				"     ),",
