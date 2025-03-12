@@ -280,6 +280,58 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/MessagesTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PostgreSQL_Cluster_Link",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "conversation_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "support_agent",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "message_sender",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "message",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "timestamp",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "conversationmessages"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PostgreSQL_Cluster_Link')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ProductsDataJSON')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -599,7 +651,7 @@
 								"referenceName": "CustomersDataJSON",
 								"type": "DatasetReference"
 							},
-							"name": "source1"
+							"name": "ConversationsSource"
 						}
 					],
 					"sinks": [
@@ -631,8 +683,8 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 foldDown(unroll(Conversations),",
+						"     documentForm: 'arrayOfDocuments') ~> ConversationsSource",
+						"ConversationsSource foldDown(unroll(Conversations),",
 						"     mapColumn(",
 						"          customer_id = CustomerID,",
 						"          conversation_id = Conversations",
@@ -778,7 +830,7 @@
 								"referenceName": "ProductsDataJSON",
 								"type": "DatasetReference"
 							},
-							"name": "source1"
+							"name": "ProductsSource"
 						}
 					],
 					"sinks": [
@@ -804,8 +856,8 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> source1",
-						"source1 alterRow(upsertIf(!isNull(ProductID)),",
+						"     documentForm: 'arrayOfDocuments') ~> ProductsSource",
+						"ProductsSource alterRow(upsertIf(!isNull(ProductID)),",
 						"     insertIf(isNull(ProductID))) ~> AlterRow1",
 						"AlterRow1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -833,6 +885,97 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
 				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MessagesFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CustomersDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "MessagesSource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "MessagesTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flattenConversations"
+						},
+						{
+							"name": "flattenMessages"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as integer,",
+						"          Profile as (FirstName as string, LastName as string, Email as string),",
+						"          Conversations as (ConversationID as string, Messages as (DateTime as string, Sender as string, Message as string, SupportAgent as string)[])[]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
+						"MessagesSource foldDown(unroll(Conversations),",
+						"     mapColumn(",
+						"          ConversationID = Conversations.ConversationID,",
+						"          Messages = Conversations.Messages",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenConversations",
+						"flattenConversations foldDown(unroll(Messages),",
+						"     mapColumn(",
+						"          ConversationID,",
+						"          SupportAgent = Messages.SupportAgent,",
+						"          Sender = Messages.Sender,",
+						"          Message = Messages.Message,",
+						"          DateTime = Messages.DateTime",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenMessages",
+						"flattenMessages sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          conversation_id as string,",
+						"          support_agent as integer,",
+						"          message_sender as string,",
+						"          message as string,",
+						"          timestamp as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          conversation_id = ConversationID,",
+						"          support_agent = SupportAgent,",
+						"          message_sender = Sender,",
+						"          message = Message,",
+						"          timestamp = DateTime",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/MessagesTable')]"
 			]
 		}
 	]
