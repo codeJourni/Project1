@@ -26,10 +26,10 @@
 					"name": "derivedColumn1"
 				},
 				{
-					"name": "FlattenConversations"
+					"name": "flatten1"
 				},
 				{
-					"name": "FlattenMessages"
+					"name": "flatten2"
 				}
 			],
 			"scriptLines": [
@@ -42,22 +42,23 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
-				"FlattenMessages derive(SupportAgent = iif(Sender == 'SupportAgent', SupportAgent, toString(null()))) ~> derivedColumn1",
+				"flatten2 derive(SupportAgent = iif({Conversations.Messages.Sender} == 'SupportAgent', {Conversations.Messages.SupportAgent}, toString(null()))) ~> derivedColumn1",
 				"MessagesSource foldDown(unroll(Conversations),",
 				"     mapColumn(",
-				"          ConversationID = Conversations.ConversationID",
-				"     ),",
-				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> FlattenConversations",
-				"MessagesSource foldDown(unroll(Conversations.Messages),",
-				"     mapColumn(",
+				"          ConversationID = Conversations.ConversationID,",
 				"          SupportAgent = Conversations.Messages.SupportAgent,",
 				"          Sender = Conversations.Messages.Sender,",
 				"          Message = Conversations.Messages.Message,",
 				"          DateTime = Conversations.Messages.DateTime",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> FlattenMessages",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 foldDown(unroll(),",
+				"     mapColumn(",
+				"          ConversationID",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten2",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -75,11 +76,10 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          conversation_id = {Conversations[1].ConversationID},",
-				"          support_agent = {Conversations[1].Messages[1].SupportAgent},",
-				"          message_sender = {Conversations[1].Messages[1].Sender},",
-				"          message = {Conversations[1].Messages[1].Message},",
-				"          timestamp = {Conversations[1].Messages[1].DateTime}",
+				"          support_agent = SupportAgent,",
+				"          message_sender = {Conversations.Messages.Sender},",
+				"          message = {Conversations.Messages.Message},",
+				"          timestamp = {Conversations.Messages.DateTime}",
 				"     )) ~> MessagesSink"
 			]
 		}
