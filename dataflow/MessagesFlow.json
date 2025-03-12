@@ -12,20 +12,8 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [
-				{
-					"dataset": {
-						"referenceName": "MessagesTable",
-						"type": "DatasetReference"
-					},
-					"name": "MessageSink"
-				}
-			],
-			"transformations": [
-				{
-					"name": "AlterRow1"
-				}
-			],
+			"sinks": [],
+			"transformations": [],
 			"scriptLines": [
 				"source(output(",
 				"          CustomerID as integer,",
@@ -35,28 +23,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine') ~> source1",
-				"source1 alterRow() ~> AlterRow1",
-				"AlterRow1 sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          conversation_id as string,",
-				"          support_agent as integer,",
-				"          message_sender as string,",
-				"          message as string,",
-				"          timestamp as timestamp",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:true,",
-				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     mapColumn(",
-				"          conversation_id = ConversationID,",
-				"          message = Message",
-				"     )) ~> MessageSink"
+				"     documentForm: 'documentPerLine') ~> source1"
 			]
 		}
 	}
