@@ -9,7 +9,7 @@
 						"referenceName": "CustomersDataJSON",
 						"type": "DatasetReference"
 					},
-					"name": "MessagesSource"
+					"name": "source1"
 				}
 			],
 			"sinks": [
@@ -38,9 +38,9 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
+				"     documentForm: 'documentPerLine') ~> source1",
 				"flatten1 alterRow() ~> AlterRow1",
-				"MessagesSource foldDown(unroll(Conversations),",
+				"source1 foldDown(unroll(Conversations),",
 				"     mapColumn(",
 				"          ConversationID = {Conversations[1].ConversationID},",
 				"          CustomerID,",
