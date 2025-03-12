@@ -606,7 +606,7 @@
 						"     broadcast: 'auto')~> join1",
 						"join1 select(mapColumn(",
 						"          customer_id = source1@CustomerID,",
-						"          email_address = Email",
+						"          email_address = Profile.Email",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
