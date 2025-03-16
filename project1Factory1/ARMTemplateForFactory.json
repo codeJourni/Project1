@@ -824,6 +824,103 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/MessagesFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CustomersDataJSON",
+								"type": "DatasetReference"
+							},
+							"name": "MessagesSource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "MessagesTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flattenConversations"
+						},
+						{
+							"name": "flattenMessages"
+						},
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as integer,",
+						"          Profile as (FirstName as string, LastName as string, Email as string),",
+						"          Conversations as (ConversationID as string, Messages as (DateTime as string, Sender as string, Message as string, SupportAgent as string)[])[]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
+						"MessagesSource foldDown(unroll(Conversations),",
+						"     mapColumn(",
+						"          ConversationID = Conversations.ConversationID,",
+						"          Messages = Conversations.Messages",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenConversations",
+						"flattenConversations foldDown(unroll(Messages),",
+						"     mapColumn(",
+						"          ConversationID,",
+						"          SupportAgent = Messages.SupportAgent,",
+						"          Sender = Messages.Sender,",
+						"          Message = Messages.Message,",
+						"          DateTime = Messages.DateTime",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenMessages",
+						"flattenMessages alterRow(upsertIf(!isNull(ConversationID)),",
+						"     updateIf(isNull(ConversationID))) ~> AlterRow1",
+						"AlterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          conversation_id as string,",
+						"          support_agent as integer,",
+						"          message_sender as string,",
+						"          message as string,",
+						"          timestamp as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['conversation_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          conversation_id = ConversationID,",
+						"          support_agent = SupportAgent,",
+						"          message_sender = Sender,",
+						"          message = Message,",
+						"          timestamp = DateTime",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
+				"[concat(variables('factoryId'), '/datasets/MessagesTable')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ProductsDataFlow')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -891,97 +988,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ProductsDataJSON')]",
 				"[concat(variables('factoryId'), '/datasets/ProductsTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MessagesFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "CustomersDataJSON",
-								"type": "DatasetReference"
-							},
-							"name": "MessagesSource"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "MessagesTable",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "flattenConversations"
-						},
-						{
-							"name": "flattenMessages"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CustomerID as integer,",
-						"          Profile as (FirstName as string, LastName as string, Email as string),",
-						"          Conversations as (ConversationID as string, Messages as (DateTime as string, Sender as string, Message as string, SupportAgent as string)[])[]",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> MessagesSource",
-						"MessagesSource foldDown(unroll(Conversations),",
-						"     mapColumn(",
-						"          ConversationID = Conversations.ConversationID,",
-						"          Messages = Conversations.Messages",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flattenConversations",
-						"flattenConversations foldDown(unroll(Messages),",
-						"     mapColumn(",
-						"          ConversationID,",
-						"          SupportAgent = Messages.SupportAgent,",
-						"          Sender = Messages.Sender,",
-						"          Message = Messages.Message,",
-						"          DateTime = Messages.DateTime",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flattenMessages",
-						"flattenMessages sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          conversation_id as string,",
-						"          support_agent as integer,",
-						"          message_sender as string,",
-						"          message as string,",
-						"          timestamp as timestamp",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          conversation_id = ConversationID,",
-						"          support_agent = SupportAgent,",
-						"          message_sender = Sender,",
-						"          message = Message,",
-						"          timestamp = DateTime",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/CustomersDataJSON')]",
-				"[concat(variables('factoryId'), '/datasets/MessagesTable')]"
 			]
 		}
 	]
